@@ -370,7 +370,8 @@ bindings are not active.\n\n"
 
     (define-key general-override-mode-map (kbd "C-c i e") #'find-file)
     (map! :leader "i e" #'find-file)
-    (define-key doom-leader-search-map (kbd "s") #'consult-imenu)
+    (map! :map doom-leader-search-map
+	  "s" #'consult-imenu)
     ;; (define-key doom-leader-search-map (kbd "b") #'consult-imenu)
     ;; (define-key doom-leader-map (kbd "e") #'treemacs)
     (map! :leader "e" #'treemacs)
