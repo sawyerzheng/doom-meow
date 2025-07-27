@@ -2,3 +2,4 @@
 ;;; completion/company/packages.el
 
 (package! meow)
+(package! key-chord)

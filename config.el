@@ -36,7 +36,7 @@
   (defvar +meow-want-blink-cursor-in-insert t
     "Whether `blink-cursor-mode' should be enabled in INSERT state.")
 
-  (setq meow-cursor-type-normal 'bar
+  (setq meow-cursor-type-normal 'box
         meow-cursor-type-insert 'bar
         meow-cursor-type-beacon 'bar
         meow-cursor-type-default 'box
@@ -203,7 +203,12 @@ switch to MOTION state."
         (when (boundp 'doom-leader-code-map)
           (define-key doom-leader-map "k" (cons "code" doom-leader-code-map))
           ;; Unbind the 'c' prefix; we'll use it in our localleader hack.
-          (define-key doom-leader-map "c" nil))))
+          (define-key doom-leader-map "c" nil)))
+      (defun +meow-leader-move-toggle-map-h ()
+        (when (boundp 'doom-leader-code-map)
+          (define-key doom-leader-map "u" (cons "toggle" doom-leader-toggle-map))
+          ;; Unbind the 'c' prefix; we'll use it in our localleader hack.
+          (define-key doom-leader-map "c" t))))
 
     ;; Also note that the Git commands are now under 'SPC v', unlike in
     ;; :editor evil.
@@ -236,7 +241,7 @@ switch to MOTION state."
 
 ;;;;;; SPC u -> C-u
   ;; Like in Doom's evil config.
-  (define-key doom-leader-map "u" #'meow-universal-argument)
+  ;; (define-key doom-leader-map "u" #'meow-universal-argument)
 
 ;;;;; 'M-SPC'
 
@@ -273,3 +278,330 @@ switch to MOTION state."
       "Meow: this Tutorial buffer has been started in Emacs state. Meow
 bindings are not active.\n\n"
       'face 'warning))))
+
+
+(defun my/meow-setup ()
+  (interactive)
+  (when (modulep! :editor meow +qwerty)
+    (setq meow-use-clipboard t)
+    (setq delete-active-region t)
+
+    (map! "ESC ESC" #'+meow-escape)
+    (map! "ESC <escape>" #'+meow-escape)
+    ;; (setq meta-prefix-char nil)
+
+    (meow-motion-overwrite-define-key
+     ;; (cons "q" my/search-keymap)
+     ;; '("Q" . "H-q")
+     '("j" . meow-next)
+     '("k" . meow-prev)
+     '("C-M-j" . "H-j")
+     '("C-M-k" . "H-k")
+     '("\\" . my/meow-quit)
+     )
+    (meow-normal-define-key
+     '("=" . back-button-local-backward)
+     '("+" . back-button-local-forward)
+     '("d" . meow-backward-delete)
+     ;; '("D" . meow-delete)
+     '("D" . recenter-top-bottom)
+     '("Q" . consult-goto-line)
+     ;; insert new empty line below
+     '("S" . open-line)
+     '("U" . undo-redo)
+     '("Z" . xah-comment-dwim)
+     '("\\" . my/meow-quit)
+     ;; region
+     '(":" . er/expand-region)
+
+     ;; pair jump
+     '("/" . xah-goto-matching-bracket) ;; "/"
+     '("T" . set-mark-command)
+     ;; scroll
+     '("<" . scroll-down-command)
+     '(">" . scroll-up-command)
+     ;; insert space
+     '("P" . xah-insert-space-after)
+     ;; shrink whitespaces
+     '("X" . xah-shrink-whitespaces)
+     ;; region expand
+     '(":" . er/expand-region)
+
+     )
+    ;; (global-unset-key (kbd "C-c b"))
+    ;; (global-unset-key (kbd "C-c f"))
+    ;; (global-unset-key (kbd "C-c j"))
+    ;; (global-unset-key (kbd "C-c k"))
+    ;; (global-unset-key (kbd "C-c w"))
+    ;; (define-key doom-leader-code-map (kbd "e") #'+eval/line-or-region)
+    ;; (define-key doom-leader-code-map (kbd "E") #'+eval/buffer-or-region)
+    ;; (define-key doom-leader-file-map (kbd "f") #'consult-buffer)
+    ;; (define-key doom-leader-file-map (kbd "F") #'find-file)
+    ;; (define-key doom-leader-file-map (kbd "b") #'persp-switch-to-buffer)
+    ;; (define-key doom-leader-file-map (kbd "k") #'kill-current-buffer)
+    ;;
+    ;; ;; Unbind the existing bindings
+    ;; (map! :leader
+    ;;       (:prefix "c"
+    ;;                "e" nil
+    ;;                "E" nil)
+    ;;       (:prefix "f"
+    ;;                "f" nil
+    ;;                "F" nil
+    ;;                "b" nil
+    ;;                "k" nil))
+
+    ;; Then bind to your preferred functions
+    (map! :leader
+          (:prefix "c"
+                   "e" #'+eval/line-or-region
+                   "E" #'+eval/buffer-or-region)
+          (:prefix "f"
+                   "f" #'consult-buffer
+                   "F" #'project-find-file
+                   "b" #'persp-switch-to-buffer
+                   "k" #'kill-current-buffer
+                   )
+          )
+    (map! :map (doom-leader-toggle-map)
+          "E" #'toggle-debug-on-error
+          )
+
+
+    (define-key general-override-mode-map (kbd "C-c i e") #'find-file)
+    (map! :leader "i e" #'find-file)
+    (define-key doom-leader-search-map (kbd "s") #'consult-imenu)
+    ;; (define-key doom-leader-search-map (kbd "b") #'consult-imenu)
+    ;; (define-key doom-leader-map (kbd "e") #'treemacs)
+    (map! :leader "e" #'treemacs)
+
+    (map! :leader "j" nil
+          "j ." #'apropos-value
+          "j /" #'describe-coding-system
+          "j ;" #'describe-syntax
+
+          "j a" #'apropos-command
+          "j b" #'describe-command
+          "j c" #'man
+          "j d" #'view-echo-area-messages
+          "j e" #'embark-act
+          "j f" #'elisp-index-search
+          "j g" #'info
+          "j h" #'apropos-documentation
+          "j i" #'describe-char
+          "j j" #'describe-function
+          "j k" #'universal-argument
+          "j l" #'describe-variable
+          "j m" #'describe-mode
+          "j n" #'describe-bindings
+          "j o" #'apropos-variable
+          "j p" #'view-lossage
+          "j s" #'describe-language-environment
+          "j u" #'info-lookup-symbol
+          "j v" #'describe-key
+          "j y" #'describe-face)
+
+    ;; (define-key meow-beacon-state-keymap (kbd "<f4>") #'meow-end-or-call-kmacro)
+    ;; (define-key meow-insert-state-keymap (kbd "<f4>") #'meow-end-or-call-kmacro)
+    ;; (define-key meow-normal-state-keymap (kbd "<f4>") #'meow-end-or-call-kmacro)
+    ;; (define-key meow-keypad-state-keymap (kbd "<f4>") #'meow-end-or-call-kmacro)
+
+    (meow-leader-define-key
+     '("SPC" . execute-extended-command)
+     '("r" . vr/query-replace)
+     '("e" . treemacs)
+     ;; buffer / file
+     ;; '("H" . beginning-of-buffer)
+     ;; '("N" . end-of-buffer)
+     '(";" . save-buffer)
+
+     ;; jupyter -- buffer
+     '("," . beginning-of-buffer)
+     '("." . end-of-buffer)
+
+     ;; app`l'ications
+     ;; '("l ," . eww)
+     ;; '("l -" . async-shell-command)
+     ;; '("l ." . visual-line-mode)
+     ;; '("l /" . abort-recursive-edit)
+     ;; '("l 0" . shell-command-on-region)
+     ;; '("l 1" . set-input-method)
+     ;; '("l 2" . global-hl-line-mode)
+     ;; '("l 4" . global-display-line-numbers-mode)
+     ;; '("l 6" . calendar)
+     ;; '("l 7" . calc)
+     ;; '("l 9" . shell-command)
+     ;; '("l ;" . count-matches)
+     ;; '("l a" . org-agenda)
+     ;; '("l b" . save-some-buffers)
+     ;; '("l c" . flyspell-buffer)
+     ;; ;; '("l d" . eshell) ;; l d use for dictionary
+     ;; '("l e" . toggle-frame-maximized)
+     ;; '("l f" . shell)
+     ;; '("l g" . make-frame-command)
+     ;; '("l h" . narrow-to-page)
+     ;; '("l i" . toggle-case-fold-search)
+     ;; '("l j" . widen)
+     ;; '("l k" . narrow-to-defun)
+     ;; '("l l" . xah-narrow-to-region)
+     ;; '("l m" . jump-to-register)
+     ;; '("l n" . toggle-debug-on-error)
+     ;; '("l o" . count-words)
+     ;; '("l r" . read-only-mode)
+     ;; '("l s" . variable-pitch-mode)
+     ;; '("l t" . toggle-truncate-lines)
+     ;; '("l u" . xah-toggle-read-novel-mode)
+     ;; '("l v" . menu-bar-open)
+     ;; '("l W" . whitespace-mode)
+     ;; ;; '("l " . nil)                      ;; uesed as prefix for elfeed
+     ;; '("l x" . xwidget-webkit-browse-url)
+
+     ;; '("i /" . revert-buffer-with-coding-system)
+     ;; '("i ;" . write-file)
+     ;; '("i v" . my/xah-open-in-vscode)
+     ;; '("i a a" . codegeex-request-completion)
+     ;; '("i a b" . baidu-translate-zh-mark)
+     ;; '("i a c c" . my/chatgpt-interface-prompt-region-action)
+     ;; '("i a c d" . codegpt-doc)
+     ;; '("i a c e" . codegpt-explain)
+     ;; '("i a c f" . codegpt-fix)
+     ;; '("i a c i" . codegpt-improve)
+     ;; '("i a e" . chatgpt-explain-region)
+     ;; '("i a f" . chatgpt-fix-region)
+     ;; '("i a l" . chatgpt-login)
+     ;; '("i a p" . my/chatgpt-interface-prompt-region)
+     ;; '("i a q" . chatgpt-query)
+     ;; '("i a r" . chatgpt-refactor-region)
+     ;; '("i a t" . chatgpt-gen-tests-for-region)
+     ;; '("i b" . set-buffer-file-coding-system)
+     ;; '("i c" . xah-copy-file-path)
+     ;; '("i d" . ibuffer)
+     '("i e" . find-file)
+     ;; '("i f" . xah-open-file-at-cursor)
+     ;; '("i i" . dired-jump)
+     ;; '("i j" . recentf-open-files)
+     ;; '("i k" . bookmark-bmenu-list)
+     '("i l" . xah-new-empty-buffer)
+     '("i m" . explorer)
+     ;; '("i o" . bookmark-jump)
+     ;; '("i p" . bookmark-set)
+     '("i r" . revert-buffer)
+     ;; '("i u" . eaf-open-browser-with-history)
+     ;; '("i s" . eaf-search-it)
+     ;; '("i w" . xah-open-in-external-app)
+     ;; '("d T" . my/xah-insert-time)
+     '("d a" . xah-insert-double-angle-bracket)
+     '("d b" . my/xah-insert-singe-bracket)
+     '("d c" . insert-char)
+     '("d d" . xah-insert-unicode)
+     '("d e" . emojify-insert-emoji)
+     '("d f" . xah-insert-date)
+     '("d g" . xah-insert-curly-single-quote)
+     '("d h" . xah-insert-double-curly-quote)
+     '("d i" . xah-insert-ascii-single-quote)
+     '("d j" . xah-insert-brace)
+     '("d k" . xah-insert-paren)
+     '("d l" . xah-insert-square-bracket)
+     '("d m" . xah-insert-corner-bracket)
+     '("d n" . xah-insert-black-lenticular-bracket)
+     '("d o" . xah-insert-tortoise-shell-bracket)
+     '("d p" . xah-insert-formfeed)
+     '("d r" . xah-insert-single-angle-quote)
+     '("d t" . xah-insert-double-angle-quote)
+     '("d u" . xah-insert-ascii-double-quote)
+     '("d v" . xah-insert-markdown-quote)
+     '("d y" . xah-insert-emacs-quote)
+     ;; '("e '" . markmacro-mark-lines)
+     ;; '("e /" . markmacro-mark-chars)
+     ;; '("e ;" . markmacro-mark-words)
+     ;; '("e <" . markmacro-apply-all)
+     ;; '("e >" . markmacro-apply-all-except-first)
+     ;; '("e C" . markmacro-rect-mark-columns)
+     ;; '("e D" . markmacro-rect-delete)
+     ;; '("e H" . markmacro-secondary-region-mark-cursors)
+     ;; '("e I" . markmacro-rect-insert)
+     ;; '("e L" . markmacro-mark-imenus)
+     ;; '("e M" . markmacro-rect-set)
+     ;; '("e R" . markmacro-rect-replace)
+     ;; '("e S" . markmacro-rect-mark-symbols)
+     ;; '("e a" . ialign)
+     ;; '("e d" . isearch-forward-symbol-at-point)
+     ;; '("e e" . highlight-symbol-at-point)
+     ;; '("e f" . isearch-forward-symbol)
+     ;; '("e h" . markmacro-secondary-region-set)
+     ;; '("e i" . highlight-lines-matching-regexp)
+     ;; '("e j" . highlight-regexp)
+     ;; '("e k" . highlight-phrase)
+     ;; '("e m" . vr/mc-mark)
+     ;; '("e n" . bm-next)
+     ;; '("e o" . resize-window)
+     ;; '("e p" . bm-previous)
+     ;; '("e q" . my/format-buffer-fn)
+     ;; '("e r" . isearch-forward-word)
+     ;; '("e t" . bm-toggle)
+     ;; '("e u" . unhighlight-regexp)
+     ;; '("e w" . xah-fill-or-unfill)
+
+
+     ;; '("k ," . xah-next-window-or-frame)
+     ;; '("k 1" . xah-append-to-register-1)
+     ;; '("k 2" . xah-clear-register-1)
+     ;; '("k 3" . xah-copy-to-register-1)
+     ;; '("k 4" . xah-paste-from-register-1)
+     ;; '("k 7" . xah-append-to-register-1)
+     ;; '("k 8" . xah-clear-register-1)
+     ;; '("k <down>" . xah-move-block-down)
+     ;; '("k <up>" . xah-move-block-up)
+     ;; '("k b" . xah-reformat-to-sentence-lines)
+     ;; '("k c" . copy-to-register)
+     ;; '("k d" . list-matching-lines)
+     ;; '("k e" . xah-sort-lines)
+     ;; '("k f" . delete-matching-lines)
+     ;; '("k g" . delete-non-matching-lines)
+     ;; '("k h" . mark-defun)
+     ;; '("k i" . goto-char)
+     ;; '("k j" . repeat-complex-command)
+     ;; '("k k" . repeat)
+     ;; '("k m" . xah-make-backup-and-save)
+     ;; '("k o" . copy-rectangle-as-kill)
+     ;; '("k p" . xah-escape-quotes)
+     ;; '("k q" . reverse-region)
+     ;; '("k r" . query-replace-regexp)
+     ;; '("k s" . xah-clean-whitespace)
+     ;; '("k t" . delete-duplicate-lines)
+     ;; '("k u" . move-to-column)
+     ;; '("k v" . insert-register)
+     ;; '("k w" . sort-numeric-fields)
+     ;; '("k y" . goto-line)
+
+
+     ;; '("o SPC" .	rectangle-mark-mode)
+     ;; '("o 3" .		number-to-register)
+     ;; '("o 4" .		increment-register)
+     ;; '("o b" .		xah-double-backslash-to-slash)
+     ;; '("o c" .		xah-slash-to-backslash)
+     ;; '("o d" .		call-last-kbd-macro)
+     ;; '("o e" .		kmacro-start-macro)
+     ;; '("o f" .		xah-quote-lines)
+     ;; '("o g" .		xah-space-to-newline)
+     ;; '("o h" .		delete-rectangle)
+     ;; '("o i" .		replace-rectangle)
+     ;; '("o j" .		xah-change-bracket-pairs)
+     ;; '("o l" .		rectangle-number-lines)
+     ;; '("o o" .		yank-rectangle)
+     ;; '("o p" .		clear-rectangle)
+     ;; '("o r" .		kmacro-end-macro)
+     ;; '("o s" .		open-rectangle)
+     ;; '("o t" .		delete-whitespace-rectangle)
+     ;; '("o u" .		kill-rectangle)
+     ;; '("o v" .		xah-slash-to-double-backslash)
+     ;; '("o w" .		apply-macro-to-region-lines)
+
+     ;; major mode hydra
+     ;; '("b" . major-mode-hydra)
+     ;; M-x
+     ;; '("a" . execute-extended-command)
+     )
+    ))
+
+(add-to-list 'after-init-hook #'my/meow-setup)
