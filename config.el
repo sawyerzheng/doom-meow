@@ -391,7 +391,8 @@ bindings are not active.\n\n"
           "j h" #'apropos-documentation
           "j i" #'describe-char
           "j j" #'describe-function
-          "j k" #'universal-argument
+          ;; "j k" #'universal-argument
+          "j k" #'meow-universal-argument
           "j l" #'describe-variable
           "j m" #'describe-mode
           "j n" #'describe-bindings
@@ -512,6 +513,7 @@ bindings are not active.\n\n"
      '("d u" . xah-insert-ascii-double-quote)
      '("d v" . xah-insert-markdown-quote)
      '("d y" . xah-insert-emacs-quote)
+     '("d z" . (lambda () (interactive) (insert "​")))
      ;; '("e '" . markmacro-mark-lines)
      ;; '("e /" . markmacro-mark-chars)
      ;; '("e ;" . markmacro-mark-words)
