@@ -205,10 +205,10 @@ switch to MOTION state."
           ;; Unbind the 'c' prefix; we'll use it in our localleader hack.
           (define-key doom-leader-map "c" nil)))
       (defun +meow-leader-move-toggle-map-h ()
-        (when (boundp 'doom-leader-code-map)
+        (when (boundp 'doom-leader-toggle-map)
           (define-key doom-leader-map "u" (cons "toggle" doom-leader-toggle-map))
           ;; Unbind the 'c' prefix; we'll use it in our localleader hack.
-          (define-key doom-leader-map "c" t))))
+          (define-key doom-leader-map "t" nil))))
 
     ;; Also note that the Git commands are now under 'SPC v', unlike in
     ;; :editor evil.
