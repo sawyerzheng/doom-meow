@@ -374,7 +374,7 @@ bindings are not active.\n\n"
 	  "s" #'consult-imenu)
     ;; (define-key doom-leader-search-map (kbd "b") #'consult-imenu)
     ;; (define-key doom-leader-map (kbd "e") #'treemacs)
-    (map! :leader "e" #'treemacs)
+    (map! :leader "e" #'+treemacs/toggle)
 
     (map! :leader "j" nil
           "j ." #'apropos-value
